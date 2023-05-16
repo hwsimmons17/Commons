@@ -49,16 +49,5 @@ export default async function middleware(req: NextRequest) {
   }
 
   // rewrite root application to `/marketing` folder
-  if (
-    hostname === "commons.place" ||
-    hostname === "commons-smoky.vercel.app" ||
-    hostname === "localhost:3000"
-  ) {
-    return NextResponse.rewrite(new URL(`/marketing${path}`, req.url));
-  }
-
-  // rewrite everything else to `/_sites/[site] dynamic route
-  return NextResponse.rewrite(
-    new URL(`/_sites/${currentHost}${path}`, req.url)
-  );
+  return NextResponse.rewrite(new URL(`/marketing${path}`, req.url));
 }
