@@ -30,15 +30,8 @@ export default async function middleware(req: NextRequest) {
     process.env.NODE_ENV === "production" && process.env.VERCEL === "1"
       ? hostname
           .replace(`.commons.place`, "")
-          .replace(`.platformize.vercel.app`, "")
-      : hostname.replace(`localhost:3000`, "");
-
-  if (currentHost == "" && path == "/login") {
-    console.log("here");
-    url.host = "app." + hostname;
-    console.log(url.hostname);
-    NextResponse.redirect(url);
-  }
+          .replace(`.commons-smoky.vercel.app`, "")
+      : hostname.replace(`.localhost:3000`, "");
 
   // rewrites for app pages
   if (currentHost == "app") {
@@ -58,7 +51,7 @@ export default async function middleware(req: NextRequest) {
   // rewrite root application to `/marketing` folder
   if (
     hostname === "commons.place" ||
-    hostname === "platformize.vercel.app" ||
+    hostname === "commons-somky.vercel.app" ||
     hostname === "localhost:3000"
   ) {
     return NextResponse.rewrite(new URL(`/marketing${path}`, req.url));
