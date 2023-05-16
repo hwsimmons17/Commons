@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { Dialog } from "@headlessui/react";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
+import { usePathname, useRouter } from "next/navigation";
 
 const navigation = [
   { name: "Product", href: "#" },
@@ -11,6 +12,14 @@ const navigation = [
 ];
 
 export default function Hero() {
+  const router = useRouter();
+  const pathname = usePathname();
+
+  const handleLogin = () => {
+    console.log(pathname);
+    router.push("/login");
+  };
+
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
@@ -51,11 +60,11 @@ export default function Hero() {
               </a>
             ))}
           </div>
-          <div className="hidden lg:flex lg:flex-1 lg:justify-end">
-            <a
-              href="#"
-              className="text-sm font-semibold leading-6 text-gray-900"
-            >
+          <div
+            className="hidden lg:flex lg:flex-1 lg:justify-end cursor-pointer"
+            onClick={handleLogin}
+          >
+            <a className="text-sm font-semibold leading-6 text-gray-900">
               Log in <span aria-hidden="true">&rarr;</span>
             </a>
           </div>
@@ -99,11 +108,8 @@ export default function Hero() {
                     </a>
                   ))}
                 </div>
-                <div className="py-6">
-                  <a
-                    href="#"
-                    className="-mx-3 block rounded-lg px-3 py-2.5 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50"
-                  >
+                <div className="py-6" onClick={handleLogin}>
+                  <a className="-mx-3 block rounded-lg px-3 py-2.5 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50 cursor-pointer">
                     Log in
                   </a>
                 </div>
