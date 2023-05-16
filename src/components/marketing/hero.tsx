@@ -1,9 +1,8 @@
 "use client";
-import { useState } from "react";
+import { Dispatch, SetStateAction, useState } from "react";
 import { Dialog } from "@headlessui/react";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 import { usePathname, useRouter } from "next/navigation";
-import { getProvider } from "../../lib/wallet";
 
 const navigation = [
   { name: "Product", href: "#" },
@@ -12,29 +11,17 @@ const navigation = [
   { name: "Company", href: "#" },
 ];
 
-export default function Hero() {
+interface Props {
+  showWaitlistSignup: boolean;
+  setShowWaitlistSignup: Dispatch<SetStateAction<boolean>>;
+}
+
+export default function Hero(props: Props) {
   const router = useRouter();
   const pathname = usePathname();
 
-  const handleLogin = async () => {
-    console.log(pathname);
-    const [provider, hasProvider] = getProvider();
-
-    if (hasProvider) {
-      try {
-        await provider.connect();
-      } catch (error) {
-        console.log(error);
-      }
-
-      try {
-        await provider.signMessage("this thing worked");
-      } catch (error) {
-        console.log(error);
-      }
-    }
-
-    // router.push("/login");
+  const joinWaitlist = async () => {
+    props.setShowWaitlistSignup(true);
   };
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -79,10 +66,10 @@ export default function Hero() {
           </div>
           <div
             className="hidden lg:flex lg:flex-1 lg:justify-end cursor-pointer"
-            onClick={handleLogin}
+            onClick={joinWaitlist}
           >
             <a className="text-sm font-semibold leading-6 text-gray-900">
-              Log in <span aria-hidden="true">&rarr;</span>
+              Join Waitlist <span aria-hidden="true">&rarr;</span>
             </a>
           </div>
         </nav>
@@ -125,9 +112,9 @@ export default function Hero() {
                     </a>
                   ))}
                 </div>
-                <div className="py-6" onClick={handleLogin}>
+                <div className="py-6" onClick={joinWaitlist}>
                   <a className="-mx-3 block rounded-lg px-3 py-2.5 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50 cursor-pointer">
-                    Log in
+                    Join Waitlist
                   </a>
                 </div>
               </div>
