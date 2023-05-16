@@ -1,3 +1,3 @@
 export default function Login() {
-  return <main className="">"hello world"</main>;
+  return <main className="">hello world</main>;
 }
