@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Dialog } from "@headlessui/react";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 import { usePathname, useRouter } from "next/navigation";
+import { getProvider } from "../../lib/wallet";
 
 const navigation = [
   { name: "Product", href: "#" },
@@ -15,9 +16,25 @@ export default function Hero() {
   const router = useRouter();
   const pathname = usePathname();
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     console.log(pathname);
-    router.push("/login");
+    const [provider, hasProvider] = getProvider();
+
+    if (hasProvider) {
+      try {
+        await provider.connect();
+      } catch (error) {
+        console.log(error);
+      }
+
+      try {
+        await provider.signMessage("this thing worked");
+      } catch (error) {
+        console.log(error);
+      }
+    }
+
+    // router.push("/login");
   };
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
