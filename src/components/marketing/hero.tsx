@@ -141,7 +141,7 @@ export default function Hero(props: Props) {
           </div>
           <div className="text-center">
             <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl font-mono">
-              Data to enrich your online business
+              Commons: Community First, Commerce Second
             </h1>
             <p className="mt-6 text-lg leading-8 text-gray-600">
               Anim aute id magna aliqua ad ad non deserunt sunt. Qui irure qui

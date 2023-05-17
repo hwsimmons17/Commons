@@ -1,3 +1,4 @@
+import { createMiddlewareSupabaseClient } from "@supabase/auth-helpers-nextjs";
 import { getToken } from "next-auth/jwt";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -16,34 +17,32 @@ export const config = {
 export default async function middleware(req: NextRequest) {
   const url = req.nextUrl;
 
-  // Get hostname of request (e.g. demo.vercel.pub, demo.localhost:3000)
   const hostname = req.headers.get("host") || "commons.place";
 
-  // Get the pathname of the request (e.g. /, /about, /blog/first-post)
   const path = url.pathname;
 
-  /*  You have to replace ".vercel.pub" with your own domain if you deploy this example under your domain.
-      You can also use wildcard subdomains on .vercel.app links that are associated with your Vercel team slug
-      in this case, our team slug is "platformize", thus *.platformize.vercel.app works. Do note that you'll
-      still need to add "*.platformize.vercel.app" as a wildcard domain on your Vercel dashboard. */
-  const currentHost =
-    process.env.NODE_ENV === "production" && process.env.VERCEL === "1"
-      ? hostname
-          .replace(`.commons.place`, "")
-          .replace(`.commons-smoky.vercel.app`, "")
-      : hostname.replace(`.localhost:3000`, "");
+  const currentHost = hostname
+    .replace(`.commons.place`, "")
+    .replace(`.commons-smoky.vercel.app`, "")
+    .replace(`.localhost:3000`, "");
 
-  // rewrites for app pages
   if (currentHost == "app") {
-    if (
-      url.pathname === "/login" &&
-      (req.cookies.get("next-auth.session-token") ||
-        req.cookies.get("__Secure-next-auth.session-token"))
-    ) {
+    const res = NextResponse.next();
+    const supabase = createMiddlewareSupabaseClient({ req, res });
+
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    if (url.pathname === "/login" && session) {
       url.pathname = "/";
       return NextResponse.redirect(url);
     }
 
+    if (url.pathname != "/login" && !session) {
+      url.pathname = "/login";
+      return NextResponse.redirect(url);
+    }
     url.pathname = `/app${url.pathname}`;
     return NextResponse.rewrite(url);
   }

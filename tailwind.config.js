@@ -7,6 +7,11 @@ module.exports = {
   ],
   theme: {
     extend: {
+      colors: {
+        periwinkle: "#C0D7FB",
+        savoryBlue: "#3E5DD2",
+        majorelleBlue: "#6555E7",
+      },
       fontFamily: {
         sans: ["var(--font-roboto)"],
         mono: ["var(--font-baskervville)"],

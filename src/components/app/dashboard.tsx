@@ -39,7 +39,7 @@ export default function Dashboard() {
         ```
       */}
       <div className="min-h-full">
-        <Popover as="header" className="bg-indigo-600 pb-24">
+        <Popover as="header" className="bg-periwinkle pb-24">
           {({ open }) => (
             <>
               <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:max-w-7xl lg:px-8">
@@ -47,10 +47,10 @@ export default function Dashboard() {
                   {/* Logo */}
                   <div className="absolute left-0 flex-shrink-0 lg:static">
                     <a href="#">
-                      <span className="sr-only">Your Company</span>
+                      <span className="sr-only">Commons</span>
                       <img
                         className="h-8 w-auto"
-                        src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=300"
+                        src="/Commons_icon.png"
                         alt="Your Company"
                       />
                     </a>
@@ -111,7 +111,7 @@ export default function Dashboard() {
                       <label htmlFor="desktop-search" className="sr-only">
                         Search
                       </label>
-                      <div className="relative text-white focus-within:text-gray-600">
+                      <div className="relative text-black focus-within:text-gray-600">
                         <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
                           <MagnifyingGlassIcon
                             className="h-5 w-5"
@@ -120,7 +120,7 @@ export default function Dashboard() {
                         </div>
                         <input
                           id="desktop-search"
-                          className="block w-full rounded-md border-0 bg-white/20 py-1.5 pl-10 pr-3 text-white placeholder:text-white focus:bg-white focus:text-gray-900 focus:ring-0 focus:placeholder:text-gray-500 sm:text-sm sm:leading-6"
+                          className="block w-full rounded-md border-0 bg-white/20 py-1.5 pl-10 pr-3 text-black placeholder:text-black focus:bg-white focus:text-gray-900 focus:ring-0 focus:placeholder:text-gray-500 sm:text-sm sm:leading-6"
                           placeholder="Search"
                           type="search"
                           name="search"
@@ -132,7 +132,7 @@ export default function Dashboard() {
                   {/* Menu button */}
                   <div className="absolute right-0 flex-shrink-0 lg:hidden">
                     {/* Mobile menu button */}
-                    <Popover.Button className="inline-flex items-center justify-center rounded-md bg-transparent p-2 text-indigo-200 hover:bg-white hover:bg-opacity-10 hover:text-white focus:outline-none focus:ring-2 focus:ring-white">
+                    <Popover.Button className="inline-flex items-center justify-center rounded-md bg-transparent p-2 text-indigo-200 hover:bg-white hover:bg-opacity-10 hover:text-black focus:outline-none focus:ring-2 focus:ring-white">
                       <span className="sr-only">Open main menu</span>
                       {open ? (
                         <XMarkIcon
@@ -148,7 +148,7 @@ export default function Dashboard() {
                     </Popover.Button>
                   </div>
                 </div>
-                <div className="hidden border-t border-white border-opacity-20 py-5 lg:block">
+                <div className="hidden border-t border-majorelleBlue border-opacity-20 py-5 lg:block">
                   <div className="grid grid-cols-3 items-center gap-8">
                     <div className="col-span-2">
                       <nav className="flex space-x-4">
@@ -157,7 +157,7 @@ export default function Dashboard() {
                             key={item.name}
                             href={item.href}
                             className={classNames(
-                              item.current ? "text-white" : "text-indigo-100",
+                              item.current ? "text-savoryBlue" : "text-black",
                               "rounded-md bg-white bg-opacity-0 px-3 py-2 text-sm font-medium hover:bg-opacity-10"
                             )}
                             aria-current={item.current ? "page" : undefined}
@@ -172,7 +172,7 @@ export default function Dashboard() {
                         <label htmlFor="mobile-search" className="sr-only">
                           Search
                         </label>
-                        <div className="relative text-white focus-within:text-gray-600">
+                        <div className="relative texttext-gray-600 focus-within:text-gray-600">
                           <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
                             <MagnifyingGlassIcon
                               className="h-5 w-5"
@@ -181,7 +181,7 @@ export default function Dashboard() {
                           </div>
                           <input
                             id="mobile-search"
-                            className="block w-full rounded-md border-0 bg-white/20 py-1.5 pl-10 pr-3 text-white placeholder:text-white focus:bg-white focus:text-gray-900 focus:ring-0 focus:placeholder:text-gray-500 sm:text-sm sm:leading-6"
+                            className="block w-full rounded-md border-0 bg-white py-1.5 pl-10 pr-3 texttext-gray-600 placeholder:text-gray-600 focus:bg-white focus:text-gray-900 focus:ring-0 focus:placeholder:text-gray-500 sm:text-sm sm:leading-6"
                             placeholder="Search"
                             type="search"
                             name="search"
@@ -226,7 +226,7 @@ export default function Dashboard() {
                             <div>
                               <img
                                 className="h-8 w-auto"
-                                src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=600"
+                                src="/Commons_icon.png"
                                 alt="Your Company"
                               />
                             </div>
@@ -356,7 +356,7 @@ export default function Dashboard() {
         </main>
         <footer>
           <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:max-w-7xl lg:px-8">
-            <div className="border-t border-gray-200 py-8 text-center text-sm text-gray-500 sm:text-left">
+            <div className="border-t border-majorelleBlue py-8 text-center text-sm text-gray-500 sm:text-left">
               <span className="block sm:inline">
                 &copy; 2021 Your Company, Inc.
               </span>{" "}

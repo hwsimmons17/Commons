@@ -1,5 +1,6 @@
 import { Baskervville, Roboto } from "next/font/google";
 import "./globals.css";
+import { Providers } from "./providers";
 
 export const metadata = {
   title: "Commons | A place for community",
@@ -28,7 +29,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${baskervville.variable} ${roboto.variable}`}>
-        {children}
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
