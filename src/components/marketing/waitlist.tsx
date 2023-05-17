@@ -6,6 +6,7 @@ import { CheckIcon } from "@heroicons/react/24/outline";
 interface Props {
   open: boolean;
   setOpen: Dispatch<SetStateAction<boolean>>;
+  setError: (error: string | undefined) => void;
 }
 
 class SendWaitlist {
@@ -29,8 +30,11 @@ export default function Waitlist(props: Props) {
       body: JSON.stringify(new SendWaitlist(e.target.email.value)),
     });
     if (res.ok) {
-      props.setOpen(false);
+      props.setError(undefined);
+      return;
     }
+    const error = await res.text();
+    props.setError(error);
   };
 
   return (

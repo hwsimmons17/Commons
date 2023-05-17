@@ -7,21 +7,21 @@ export async function POST(request: NextRequest) {
 
   const email = res.email;
   if (!email) {
-    return new Response("No email", {
+    return new Response("Please provide an email", {
       status: 400,
     });
   }
 
   const supabaseUrl = process.env.SUPABASE_URL;
   if (!supabaseUrl) {
-    return new Response("No Supabase url", {
+    return new Response("Internal server error", {
       status: 500,
     });
   }
 
   const supabaseKey = process.env.SUPABASE_KEY;
   if (!supabaseKey) {
-    return new Response("No Supbase key", {
+    return new Response("Internal server error", {
       status: 500,
     });
   }
@@ -31,12 +31,14 @@ export async function POST(request: NextRequest) {
   const { data, error } = await supabase.from("waitlist").insert([{ email }]);
 
   if (error) {
-    return new Response(
-      "Internal server Error, error saving email to database",
-      {
-        status: 500,
-      }
-    );
+    if ((error.code = "23505")) {
+      return new Response("Your email is already in the waitlist", {
+        status: 400,
+      });
+    }
+    return new Response("Internal server error", {
+      status: 500,
+    });
   }
 
   return new Response(null, { status: 201 });
