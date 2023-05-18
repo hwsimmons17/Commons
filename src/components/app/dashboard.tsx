@@ -1,18 +1,4 @@
 "use client";
-/*
-  This example requires some changes to your config:
-  
-  ```
-  // tailwind.config.js
-  module.exports = {
-    // ...
-    plugins: [
-      // ...
-      require('@tailwindcss/forms'),
-    ],
-  }
-  ```
-*/
 import { Fragment, useEffect, useState } from "react";
 import { Dialog, Menu, Transition } from "@headlessui/react";
 import {
@@ -32,6 +18,7 @@ import {
 } from "@heroicons/react/20/solid";
 import { Facebook } from "@/lib/facebook";
 import { useSupabaseClient } from "@supabase/auth-helpers-react";
+import { useRouter } from "next/navigation";
 
 const navigation = [
   { name: "Projects", href: "#", icon: FolderIcon, current: false },
@@ -96,6 +83,7 @@ export default function Dashboard() {
     "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
   );
   const supabase = useSupabaseClient();
+  const router = useRouter();
 
   useEffect(() => {
     const userMetadata = fb.getUserMetadata();
@@ -237,6 +225,7 @@ export default function Dashboard() {
                               alt=""
                               onClick={async () => {
                                 await supabase.auth.signOut();
+                                router.push("/login");
                               }}
                             />
                             <span className="sr-only">Your profile</span>
@@ -322,8 +311,9 @@ export default function Dashboard() {
                       className="h-8 w-8 rounded-full bg-gray-800"
                       src={userImage}
                       alt=""
-                      onClick={async () => {
+                      onClick={async (e) => {
                         await supabase.auth.signOut();
+                        router.push("/login");
                       }}
                     />
                     <span className="sr-only">Your profile</span>
