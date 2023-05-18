@@ -1,26 +1,86 @@
 "use client";
-import { Fragment } from "react";
-import { Menu, Popover, Transition } from "@headlessui/react";
-import { Bars3Icon, BellIcon, XMarkIcon } from "@heroicons/react/24/outline";
-import { MagnifyingGlassIcon } from "@heroicons/react/20/solid";
+/*
+  This example requires some changes to your config:
+  
+  ```
+  // tailwind.config.js
+  module.exports = {
+    // ...
+    plugins: [
+      // ...
+      require('@tailwindcss/forms'),
+    ],
+  }
+  ```
+*/
+import { Fragment, useEffect, useState } from "react";
+import { Dialog, Menu, Transition } from "@headlessui/react";
+import {
+  ChartBarSquareIcon,
+  Cog6ToothIcon,
+  FolderIcon,
+  GlobeAltIcon,
+  ServerIcon,
+  SignalIcon,
+  XMarkIcon,
+} from "@heroicons/react/24/outline";
+import {
+  Bars3Icon,
+  ChevronRightIcon,
+  ChevronUpDownIcon,
+  MagnifyingGlassIcon,
+} from "@heroicons/react/20/solid";
+import { Facebook } from "@/lib/facebook";
 
-const user = {
-  name: "Tom Cook",
-  email: "tom@example.com",
-  imageUrl:
-    "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-};
 const navigation = [
-  { name: "Home", href: "#", current: true },
-  { name: "Profile", href: "#", current: false },
-  { name: "Resources", href: "#", current: false },
-  { name: "Company Directory", href: "#", current: false },
-  { name: "Openings", href: "#", current: false },
+  { name: "Projects", href: "#", icon: FolderIcon, current: false },
+  { name: "Deployments", href: "#", icon: ServerIcon, current: true },
+  { name: "Activity", href: "#", icon: SignalIcon, current: false },
+  { name: "Domains", href: "#", icon: GlobeAltIcon, current: false },
+  { name: "Usage", href: "#", icon: ChartBarSquareIcon, current: false },
+  { name: "Settings", href: "#", icon: Cog6ToothIcon, current: false },
 ];
-const userNavigation = [
-  { name: "Your Profile", href: "#" },
-  { name: "Settings", href: "#" },
-  { name: "Sign out", href: "#" },
+const teams = [
+  { id: 1, name: "Planetaria", href: "#", initial: "P", current: false },
+  { id: 2, name: "Protocol", href: "#", initial: "P", current: false },
+  { id: 3, name: "Tailwind Labs", href: "#", initial: "T", current: false },
+];
+const statuses = {
+  offline: "text-gray-500 bg-gray-100/10",
+  online: "text-green-400 bg-green-400/10",
+  error: "text-rose-400 bg-rose-400/10",
+};
+const environments = {
+  Preview: "text-gray-400 bg-gray-400/10 ring-gray-400/20",
+  Production: "text-indigo-400 bg-indigo-400/10 ring-indigo-400/30",
+};
+const deployments = [
+  {
+    id: 1,
+    href: "#",
+    projectName: "ios-app",
+    teamName: "Planetaria",
+    status: "offline",
+    statusText: "Initiated 1m 32s ago",
+    description: "Deploys from GitHub",
+    environment: "Preview",
+  },
+  // More deployments...
+];
+const activityItems = [
+  {
+    user: {
+      name: "Michael Foster",
+      imageUrl:
+        "https://images.unsplash.com/photo-1519244703995-f4e0f30006d5?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
+    },
+    projectName: "ios-app",
+    commit: "2d89f0c8",
+    branch: "main",
+    date: "1h",
+    dateTime: "2023-01-23T11:00",
+  },
+  // More items...
 ];
 
 function classNames(...classes: string[]) {
@@ -28,342 +88,455 @@ function classNames(...classes: string[]) {
 }
 
 export default function Dashboard() {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const fb = new Facebook(process.env.NEXT_PUBLIC_FACEBOOK_ID!);
+  const [userName, setUserName] = useState("loading...");
+  const [userImage, setUserImage] = useState(
+    "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+  );
+
+  useEffect(() => {
+    const userMetadata = fb.getUserMetadata();
+
+    setUserName(userMetadata.full_name);
+    setUserImage(userMetadata.avatar_url);
+  });
+
   return (
     <>
       {/*
         This example requires updating your template:
 
         ```
-        <html class="h-full bg-gray-100">
+        <html class="h-full bg-gray-900">
         <body class="h-full">
         ```
       */}
-      <div className="min-h-full">
-        <Popover as="header" className="bg-periwinkle pb-24">
-          {({ open }) => (
-            <>
-              <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:max-w-7xl lg:px-8">
-                <div className="relative flex items-center justify-center py-5 lg:justify-between">
-                  {/* Logo */}
-                  <div className="absolute left-0 flex-shrink-0 lg:static">
-                    <a href="#">
-                      <span className="sr-only">Commons</span>
-                      <img
-                        className="h-8 w-auto"
-                        src="/Commons_icon.png"
-                        alt="Your Company"
-                      />
-                    </a>
-                  </div>
+      <div>
+        <Transition.Root show={sidebarOpen} as={Fragment}>
+          <Dialog
+            as="div"
+            className="relative z-50 xl:hidden"
+            onClose={setSidebarOpen}
+          >
+            <Transition.Child
+              as={Fragment}
+              enter="transition-opacity ease-linear duration-300"
+              enterFrom="opacity-0"
+              enterTo="opacity-100"
+              leave="transition-opacity ease-linear duration-300"
+              leaveFrom="opacity-100"
+              leaveTo="opacity-0"
+            >
+              <div className="fixed inset-0 bg-gray-900/80" />
+            </Transition.Child>
 
-                  {/* Right section on desktop */}
-                  <div className="hidden lg:ml-4 lg:flex lg:items-center lg:pr-0.5">
-                    <button
-                      type="button"
-                      className="flex-shrink-0 rounded-full p-1 text-indigo-200 hover:bg-white hover:bg-opacity-10 hover:text-white focus:outline-none focus:ring-2 focus:ring-white"
-                    >
-                      <span className="sr-only">View notifications</span>
-                      <BellIcon className="h-6 w-6" aria-hidden="true" />
-                    </button>
-
-                    {/* Profile dropdown */}
-                    <Menu as="div" className="relative ml-4 flex-shrink-0">
-                      <div>
-                        <Menu.Button className="flex rounded-full bg-white text-sm ring-2 ring-white ring-opacity-20 focus:outline-none focus:ring-opacity-100">
-                          <span className="sr-only">Open user menu</span>
-                          <img
-                            className="h-8 w-8 rounded-full"
-                            src={user.imageUrl}
-                            alt=""
-                          />
-                        </Menu.Button>
-                      </div>
-                      <Transition
-                        as={Fragment}
-                        leave="transition ease-in duration-75"
-                        leaveFrom="transform opacity-100 scale-100"
-                        leaveTo="transform opacity-0 scale-95"
-                      >
-                        <Menu.Items className="absolute -right-2 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-                          {userNavigation.map((item) => (
-                            <Menu.Item key={item.name}>
-                              {({ active }) => (
-                                <a
-                                  href={item.href}
-                                  className={classNames(
-                                    active ? "bg-gray-100" : "",
-                                    "block px-4 py-2 text-sm text-gray-700"
-                                  )}
-                                >
-                                  {item.name}
-                                </a>
-                              )}
-                            </Menu.Item>
-                          ))}
-                        </Menu.Items>
-                      </Transition>
-                    </Menu>
-                  </div>
-
-                  {/* Search */}
-                  <div className="min-w-0 flex-1 px-12 lg:hidden">
-                    <div className="mx-auto w-full max-w-xs">
-                      <label htmlFor="desktop-search" className="sr-only">
-                        Search
-                      </label>
-                      <div className="relative text-black focus-within:text-gray-600">
-                        <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                          <MagnifyingGlassIcon
-                            className="h-5 w-5"
-                            aria-hidden="true"
-                          />
-                        </div>
-                        <input
-                          id="desktop-search"
-                          className="block w-full rounded-md border-0 bg-white/20 py-1.5 pl-10 pr-3 text-black placeholder:text-black focus:bg-white focus:text-gray-900 focus:ring-0 focus:placeholder:text-gray-500 sm:text-sm sm:leading-6"
-                          placeholder="Search"
-                          type="search"
-                          name="search"
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Menu button */}
-                  <div className="absolute right-0 flex-shrink-0 lg:hidden">
-                    {/* Mobile menu button */}
-                    <Popover.Button className="inline-flex items-center justify-center rounded-md bg-transparent p-2 text-indigo-200 hover:bg-white hover:bg-opacity-10 hover:text-black focus:outline-none focus:ring-2 focus:ring-white">
-                      <span className="sr-only">Open main menu</span>
-                      {open ? (
-                        <XMarkIcon
-                          className="block h-6 w-6"
-                          aria-hidden="true"
-                        />
-                      ) : (
-                        <Bars3Icon
-                          className="block h-6 w-6"
-                          aria-hidden="true"
-                        />
-                      )}
-                    </Popover.Button>
-                  </div>
-                </div>
-                <div className="hidden border-t border-majorelleBlue border-opacity-20 py-5 lg:block">
-                  <div className="grid grid-cols-3 items-center gap-8">
-                    <div className="col-span-2">
-                      <nav className="flex space-x-4">
-                        {navigation.map((item) => (
-                          <a
-                            key={item.name}
-                            href={item.href}
-                            className={classNames(
-                              item.current ? "text-savoryBlue" : "text-black",
-                              "rounded-md bg-white bg-opacity-0 px-3 py-2 text-sm font-medium hover:bg-opacity-10"
-                            )}
-                            aria-current={item.current ? "page" : undefined}
-                          >
-                            {item.name}
-                          </a>
-                        ))}
-                      </nav>
-                    </div>
-                    <div>
-                      <div className="mx-auto w-full max-w-md">
-                        <label htmlFor="mobile-search" className="sr-only">
-                          Search
-                        </label>
-                        <div className="relative texttext-gray-600 focus-within:text-gray-600">
-                          <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                            <MagnifyingGlassIcon
-                              className="h-5 w-5"
-                              aria-hidden="true"
-                            />
-                          </div>
-                          <input
-                            id="mobile-search"
-                            className="block w-full rounded-md border-0 bg-white py-1.5 pl-10 pr-3 texttext-gray-600 placeholder:text-gray-600 focus:bg-white focus:text-gray-900 focus:ring-0 focus:placeholder:text-gray-500 sm:text-sm sm:leading-6"
-                            placeholder="Search"
-                            type="search"
-                            name="search"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <Transition.Root as={Fragment}>
-                <div className="lg:hidden">
+            <div className="fixed inset-0 flex">
+              <Transition.Child
+                as={Fragment}
+                enter="transition ease-in-out duration-300 transform"
+                enterFrom="-translate-x-full"
+                enterTo="translate-x-0"
+                leave="transition ease-in-out duration-300 transform"
+                leaveFrom="translate-x-0"
+                leaveTo="-translate-x-full"
+              >
+                <Dialog.Panel className="relative mr-16 flex w-full max-w-xs flex-1">
                   <Transition.Child
                     as={Fragment}
-                    enter="duration-150 ease-out"
+                    enter="ease-in-out duration-300"
                     enterFrom="opacity-0"
                     enterTo="opacity-100"
-                    leave="duration-150 ease-in"
+                    leave="ease-in-out duration-300"
                     leaveFrom="opacity-100"
                     leaveTo="opacity-0"
                   >
-                    <Popover.Overlay className="fixed inset-0 z-20 bg-black bg-opacity-25" />
+                    <div className="absolute left-full top-0 flex w-16 justify-center pt-5">
+                      <button
+                        type="button"
+                        className="-m-2.5 p-2.5"
+                        onClick={() => setSidebarOpen(false)}
+                      >
+                        <span className="sr-only">Close sidebar</span>
+                        <XMarkIcon
+                          className="h-6 w-6 text-white"
+                          aria-hidden="true"
+                        />
+                      </button>
+                    </div>
                   </Transition.Child>
-
-                  <Transition.Child
-                    as={Fragment}
-                    enter="duration-150 ease-out"
-                    enterFrom="opacity-0 scale-95"
-                    enterTo="opacity-100 scale-100"
-                    leave="duration-150 ease-in"
-                    leaveFrom="opacity-100 scale-100"
-                    leaveTo="opacity-0 scale-95"
-                  >
-                    <Popover.Panel
-                      focus
-                      className="absolute inset-x-0 top-0 z-30 mx-auto w-full max-w-3xl origin-top transform p-2 transition"
-                    >
-                      <div className="divide-y divide-gray-200 rounded-lg bg-white shadow-lg ring-1 ring-black ring-opacity-5">
-                        <div className="pb-2 pt-3">
-                          <div className="flex items-center justify-between px-4">
-                            <div>
-                              <img
-                                className="h-8 w-auto"
-                                src="/Commons_icon.png"
-                                alt="Your Company"
-                              />
-                            </div>
-                            <div className="-mr-2">
-                              <Popover.Button className="inline-flex items-center justify-center rounded-md bg-white p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
-                                <span className="sr-only">Close menu</span>
-                                <XMarkIcon
-                                  className="h-6 w-6"
-                                  aria-hidden="true"
-                                />
-                              </Popover.Button>
-                            </div>
-                          </div>
-                          <div className="mt-3 space-y-1 px-2">
-                            <a
-                              href="#"
-                              className="block rounded-md px-3 py-2 text-base font-medium text-gray-900 hover:bg-gray-100 hover:text-gray-800"
-                            >
-                              Home
-                            </a>
-                            <a
-                              href="#"
-                              className="block rounded-md px-3 py-2 text-base font-medium text-gray-900 hover:bg-gray-100 hover:text-gray-800"
-                            >
-                              Profile
-                            </a>
-                            <a
-                              href="#"
-                              className="block rounded-md px-3 py-2 text-base font-medium text-gray-900 hover:bg-gray-100 hover:text-gray-800"
-                            >
-                              Resources
-                            </a>
-                            <a
-                              href="#"
-                              className="block rounded-md px-3 py-2 text-base font-medium text-gray-900 hover:bg-gray-100 hover:text-gray-800"
-                            >
-                              Company Directory
-                            </a>
-                            <a
-                              href="#"
-                              className="block rounded-md px-3 py-2 text-base font-medium text-gray-900 hover:bg-gray-100 hover:text-gray-800"
-                            >
-                              Openings
-                            </a>
-                          </div>
-                        </div>
-                        <div className="pb-2 pt-4">
-                          <div className="flex items-center px-5">
-                            <div className="flex-shrink-0">
-                              <img
-                                className="h-10 w-10 rounded-full"
-                                src={user.imageUrl}
-                                alt=""
-                              />
-                            </div>
-                            <div className="ml-3 min-w-0 flex-1">
-                              <div className="truncate text-base font-medium text-gray-800">
-                                {user.name}
-                              </div>
-                              <div className="truncate text-sm font-medium text-gray-500">
-                                {user.email}
-                              </div>
-                            </div>
-                            <button
-                              type="button"
-                              className="ml-auto flex-shrink-0 rounded-full bg-white p-1 text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                            >
-                              <span className="sr-only">
-                                View notifications
-                              </span>
-                              <BellIcon
-                                className="h-6 w-6"
-                                aria-hidden="true"
-                              />
-                            </button>
-                          </div>
-                          <div className="mt-3 space-y-1 px-2">
-                            {userNavigation.map((item) => (
-                              <a
-                                key={item.name}
-                                href={item.href}
-                                className="block rounded-md px-3 py-2 text-base font-medium text-gray-900 hover:bg-gray-100 hover:text-gray-800"
-                              >
-                                {item.name}
-                              </a>
+                  {/* Sidebar component, swap this element with another sidebar if you like */}
+                  <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-gray-900 px-6 ring-1 ring-white/10">
+                    <div className="flex h-16 shrink-0 items-center">
+                      <img
+                        className="h-8 w-auto"
+                        src="./Commons_icon.png"
+                        alt="Your Company"
+                      />
+                    </div>
+                    <nav className="flex flex-1 flex-col">
+                      <ul role="list" className="flex flex-1 flex-col gap-y-7">
+                        <li>
+                          <ul role="list" className="-mx-2 space-y-1">
+                            {navigation.map((item) => (
+                              <li key={item.name}>
+                                <a
+                                  href={item.href}
+                                  className={classNames(
+                                    item.current
+                                      ? "bg-gray-800 text-white"
+                                      : "text-gray-400 hover:text-white hover:bg-gray-800",
+                                    "group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
+                                  )}
+                                >
+                                  <item.icon
+                                    className="h-6 w-6 shrink-0"
+                                    aria-hidden="true"
+                                  />
+                                  {item.name}
+                                </a>
+                              </li>
                             ))}
+                          </ul>
+                        </li>
+                        <li>
+                          <div className="text-xs font-semibold leading-6 text-gray-400">
+                            Your communities
                           </div>
-                        </div>
-                      </div>
-                    </Popover.Panel>
-                  </Transition.Child>
-                </div>
-              </Transition.Root>
-            </>
-          )}
-        </Popover>
-        <main className="-mt-24 pb-8">
-          <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:max-w-7xl lg:px-8">
-            <h1 className="sr-only">Page title</h1>
-            {/* Main 3 column grid */}
-            <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-3 lg:gap-8">
-              {/* Left column */}
-              <div className="grid grid-cols-1 gap-4 lg:col-span-2">
-                <section aria-labelledby="section-1-title">
-                  <h2 className="sr-only" id="section-1-title">
-                    Section title
-                  </h2>
-                  <div className="overflow-hidden rounded-lg bg-white shadow">
-                    <div className="p-6">{/* Your content */}</div>
+                          <ul role="list" className="-mx-2 mt-2 space-y-1">
+                            {teams.map((team) => (
+                              <li key={team.name}>
+                                <a
+                                  href={team.href}
+                                  className={classNames(
+                                    team.current
+                                      ? "bg-gray-800 text-white"
+                                      : "text-gray-400 hover:text-white hover:bg-gray-800",
+                                    "group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
+                                  )}
+                                >
+                                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border border-gray-700 bg-gray-800 text-[0.625rem] font-medium text-gray-400 group-hover:text-white">
+                                    {team.initial}
+                                  </span>
+                                  <span className="truncate">{team.name}</span>
+                                </a>
+                              </li>
+                            ))}
+                          </ul>
+                        </li>
+                        <li className="-mx-6 mt-auto">
+                          <a
+                            href="#"
+                            className="flex items-center gap-x-4 px-6 py-3 text-sm font-semibold leading-6 text-white hover:bg-gray-800"
+                          >
+                            <img
+                              className="h-8 w-8 rounded-full bg-gray-800"
+                              src={userImage}
+                              alt=""
+                            />
+                            <span className="sr-only">Your profile</span>
+                            <span aria-hidden="true">{userName}</span>
+                          </a>
+                        </li>
+                      </ul>
+                    </nav>
                   </div>
-                </section>
-              </div>
+                </Dialog.Panel>
+              </Transition.Child>
+            </div>
+          </Dialog>
+        </Transition.Root>
 
-              {/* Right column */}
-              <div className="grid grid-cols-1 gap-4">
-                <section aria-labelledby="section-2-title">
-                  <h2 className="sr-only" id="section-2-title">
-                    Section title
-                  </h2>
-                  <div className="overflow-hidden rounded-lg bg-white shadow">
-                    <div className="p-6">{/* Your content */}</div>
+        {/* Static sidebar for desktop */}
+        <div className="hidden xl:fixed xl:inset-y-0 xl:z-50 xl:flex xl:w-72 xl:flex-col">
+          {/* Sidebar component, swap this element with another sidebar if you like */}
+          <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-black/10 px-6 ring-1 ring-white/5">
+            <div className="flex h-16 shrink-0 items-center">
+              <img
+                className="h-12 w-auto"
+                src="./Commons_icon.png"
+                alt="Your Company"
+              />
+            </div>
+            <nav className="flex flex-1 flex-col">
+              <ul role="list" className="flex flex-1 flex-col gap-y-7">
+                <li>
+                  <ul role="list" className="-mx-2 space-y-1">
+                    {navigation.map((item) => (
+                      <li key={item.name}>
+                        <a
+                          href={item.href}
+                          className={classNames(
+                            item.current
+                              ? "bg-gray-800 text-white"
+                              : "text-gray-400 hover:text-white hover:bg-gray-800",
+                            "group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
+                          )}
+                        >
+                          <item.icon
+                            className="h-6 w-6 shrink-0"
+                            aria-hidden="true"
+                          />
+                          {item.name}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </li>
+                <li>
+                  <div className="text-xs font-semibold leading-6 text-gray-400">
+                    Your communities
                   </div>
-                </section>
-              </div>
+                  <ul role="list" className="-mx-2 mt-2 space-y-1">
+                    {teams.map((team) => (
+                      <li key={team.name}>
+                        <a
+                          href={team.href}
+                          className={classNames(
+                            team.current
+                              ? "bg-gray-800 text-white"
+                              : "text-gray-400 hover:text-white hover:bg-gray-800",
+                            "group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
+                          )}
+                        >
+                          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border border-gray-700 bg-gray-800 text-[0.625rem] font-medium text-gray-400 group-hover:text-white">
+                            {team.initial}
+                          </span>
+                          <span className="truncate">{team.name}</span>
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </li>
+                <li className="-mx-6 mt-auto">
+                  <a
+                    href="#"
+                    className="flex items-center gap-x-4 px-6 py-3 text-sm font-semibold leading-6 text-white hover:bg-gray-800"
+                  >
+                    <img
+                      className="h-8 w-8 rounded-full bg-gray-800"
+                      src={userImage}
+                      alt=""
+                    />
+                    <span className="sr-only">Your profile</span>
+                    <span aria-hidden="true">{userName}</span>
+                  </a>
+                </li>
+              </ul>
+            </nav>
+          </div>
+        </div>
+
+        <div className="xl:pl-72">
+          {/* Sticky search header */}
+          <div className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-6 border-b border-white/5 bg-gray-900 px-4 shadow-sm sm:px-6 lg:px-8">
+            <button
+              type="button"
+              className="-m-2.5 p-2.5 text-white xl:hidden"
+              onClick={() => setSidebarOpen(true)}
+            >
+              <span className="sr-only">Open sidebar</span>
+              <Bars3Icon className="h-5 w-5" aria-hidden="true" />
+            </button>
+
+            <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
+              <form className="flex flex-1" action="#" method="GET">
+                <label htmlFor="search-field" className="sr-only">
+                  Search
+                </label>
+                <div className="relative w-full">
+                  <MagnifyingGlassIcon
+                    className="pointer-events-none absolute inset-y-0 left-0 h-full w-5 text-gray-500"
+                    aria-hidden="true"
+                  />
+                  <input
+                    id="search-field"
+                    className="block h-full w-full border-0 bg-transparent py-0 pl-8 pr-0 text-white focus:ring-0 sm:text-sm"
+                    placeholder="Search..."
+                    type="search"
+                    name="search"
+                  />
+                </div>
+              </form>
             </div>
           </div>
-        </main>
-        <footer>
-          <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:max-w-7xl lg:px-8">
-            <div className="border-t border-majorelleBlue py-8 text-center text-sm text-gray-500 sm:text-left">
-              <span className="block sm:inline">
-                &copy; 2021 Your Company, Inc.
-              </span>{" "}
-              <span className="block sm:inline">All rights reserved.</span>
-            </div>
-          </div>
-        </footer>
+
+          <main className="lg:pr-96">
+            <header className="flex items-center justify-between border-b border-white/5 px-4 py-4 sm:px-6 sm:py-6 lg:px-8">
+              <h1 className="text-base font-semibold leading-7 text-white">
+                Deployments
+              </h1>
+
+              {/* Sort dropdown */}
+              <Menu as="div" className="relative">
+                <Menu.Button className="flex items-center gap-x-1 text-sm font-medium leading-6 text-white">
+                  Sort by
+                  <ChevronUpDownIcon
+                    className="h-5 w-5 text-gray-500"
+                    aria-hidden="true"
+                  />
+                </Menu.Button>
+                <Transition
+                  as={Fragment}
+                  enter="transition ease-out duration-100"
+                  enterFrom="transform opacity-0 scale-95"
+                  enterTo="transform opacity-100 scale-100"
+                  leave="transition ease-in duration-75"
+                  leaveFrom="transform opacity-100 scale-100"
+                  leaveTo="transform opacity-0 scale-95"
+                >
+                  <Menu.Items className="absolute right-0 z-10 mt-2.5 w-40 origin-top-right rounded-md bg-white py-2 shadow-lg ring-1 ring-gray-900/5 focus:outline-none">
+                    <Menu.Item>
+                      {({ active }) => (
+                        <a
+                          href="#"
+                          className={classNames(
+                            active ? "bg-gray-50" : "",
+                            "block px-3 py-1 text-sm leading-6 text-gray-900"
+                          )}
+                        >
+                          Name
+                        </a>
+                      )}
+                    </Menu.Item>
+                    <Menu.Item>
+                      {({ active }) => (
+                        <a
+                          href="#"
+                          className={classNames(
+                            active ? "bg-gray-50" : "",
+                            "block px-3 py-1 text-sm leading-6 text-gray-900"
+                          )}
+                        >
+                          Date updated
+                        </a>
+                      )}
+                    </Menu.Item>
+                    <Menu.Item>
+                      {({ active }) => (
+                        <a
+                          href="#"
+                          className={classNames(
+                            active ? "bg-gray-50" : "",
+                            "block px-3 py-1 text-sm leading-6 text-gray-900"
+                          )}
+                        >
+                          Environment
+                        </a>
+                      )}
+                    </Menu.Item>
+                  </Menu.Items>
+                </Transition>
+              </Menu>
+            </header>
+
+            {/* Deployment list */}
+            <ul role="list" className="divide-y divide-white/5">
+              {deployments.map((deployment) => (
+                <li
+                  key={deployment.id}
+                  className="relative flex items-center space-x-4 px-4 py-4 sm:px-6 lg:px-8"
+                >
+                  <div className="min-w-0 flex-auto">
+                    <div className="flex items-center gap-x-3">
+                      <div
+                        className={classNames(
+                          //@ts-ignore
+                          statuses[deployment.status],
+                          "flex-none rounded-full p-1"
+                        )}
+                      >
+                        <div className="h-2 w-2 rounded-full bg-current" />
+                      </div>
+                      <h2 className="min-w-0 text-sm font-semibold leading-6 text-white">
+                        <a href={deployment.href} className="flex gap-x-2">
+                          <span className="truncate">
+                            {deployment.teamName}
+                          </span>
+                          <span className="text-gray-400">/</span>
+                          <span className="whitespace-nowrap">
+                            {deployment.projectName}
+                          </span>
+                          <span className="absolute inset-0" />
+                        </a>
+                      </h2>
+                    </div>
+                    <div className="mt-3 flex items-center gap-x-2.5 text-xs leading-5 text-gray-400">
+                      <p className="truncate">{deployment.description}</p>
+                      <svg
+                        viewBox="0 0 2 2"
+                        className="h-0.5 w-0.5 flex-none fill-gray-300"
+                      >
+                        <circle cx={1} cy={1} r={1} />
+                      </svg>
+                      <p className="whitespace-nowrap">
+                        {deployment.statusText}
+                      </p>
+                    </div>
+                  </div>
+                  <div
+                    className={classNames(
+                      //@ts-ignore
+                      environments[deployment.environment],
+                      "rounded-full flex-none py-1 px-2 text-xs font-medium ring-1 ring-inset"
+                    )}
+                  >
+                    {deployment.environment}
+                  </div>
+                  <ChevronRightIcon
+                    className="h-5 w-5 flex-none text-gray-400"
+                    aria-hidden="true"
+                  />
+                </li>
+              ))}
+            </ul>
+          </main>
+
+          {/* Activity feed */}
+          <aside className="bg-black/10 lg:fixed lg:bottom-0 lg:right-0 lg:top-16 lg:w-96 lg:overflow-y-auto lg:border-l lg:border-white/5">
+            <header className="flex items-center justify-between border-b border-white/5 px-4 py-4 sm:px-6 sm:py-6 lg:px-8">
+              <h2 className="text-base font-semibold leading-7 text-white">
+                Activity feed
+              </h2>
+              <a
+                href="#"
+                className="text-sm font-semibold leading-6 text-indigo-400"
+              >
+                View all
+              </a>
+            </header>
+            <ul role="list" className="divide-y divide-white/5">
+              {activityItems.map((item) => (
+                <li key={item.commit} className="px-4 py-4 sm:px-6 lg:px-8">
+                  <div className="flex items-center gap-x-3">
+                    <img
+                      src={item.user.imageUrl}
+                      alt=""
+                      className="h-6 w-6 flex-none rounded-full bg-gray-800"
+                    />
+                    <h3 className="flex-auto truncate text-sm font-semibold leading-6 text-white">
+                      {item.user.name}
+                    </h3>
+                    <time
+                      dateTime={item.dateTime}
+                      className="flex-none text-xs text-gray-600"
+                    >
+                      {item.date}
+                    </time>
+                  </div>
+                  <p className="mt-3 truncate text-sm text-gray-500">
+                    Pushed to{" "}
+                    <span className="text-gray-400">{item.projectName}</span> (
+                    <span className="font-mono text-gray-400">
+                      {item.commit}
+                    </span>{" "}
+                    on <span className="text-gray-400">{item.branch}</span>)
+                  </p>
+                </li>
+              ))}
+            </ul>
+          </aside>
+        </div>
       </div>
     </>
   );
