@@ -31,6 +31,7 @@ import {
   MagnifyingGlassIcon,
 } from "@heroicons/react/20/solid";
 import { Facebook } from "@/lib/facebook";
+import { useSupabaseClient } from "@supabase/auth-helpers-react";
 
 const navigation = [
   { name: "Projects", href: "#", icon: FolderIcon, current: false },
@@ -94,13 +95,14 @@ export default function Dashboard() {
   const [userImage, setUserImage] = useState(
     "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
   );
+  const supabase = useSupabaseClient();
 
   useEffect(() => {
     const userMetadata = fb.getUserMetadata();
 
     setUserName(userMetadata.full_name);
     setUserImage(userMetadata.avatar_url);
-  });
+  }, []);
 
   return (
     <>
@@ -233,6 +235,9 @@ export default function Dashboard() {
                               className="h-8 w-8 rounded-full bg-gray-800"
                               src={userImage}
                               alt=""
+                              onClick={async () => {
+                                await supabase.auth.signOut();
+                              }}
                             />
                             <span className="sr-only">Your profile</span>
                             <span aria-hidden="true">{userName}</span>
@@ -317,6 +322,9 @@ export default function Dashboard() {
                       className="h-8 w-8 rounded-full bg-gray-800"
                       src={userImage}
                       alt=""
+                      onClick={async () => {
+                        await supabase.auth.signOut();
+                      }}
                     />
                     <span className="sr-only">Your profile</span>
                     <span aria-hidden="true">{userName}</span>
