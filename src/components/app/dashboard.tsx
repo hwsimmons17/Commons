@@ -19,6 +19,7 @@ import {
 import { Facebook } from "@/lib/facebook";
 import { useSupabaseClient } from "@supabase/auth-helpers-react";
 import { useRouter } from "next/navigation";
+import { ServerClient } from "@/lib/server";
 
 const navigation = [
   { name: "Projects", href: "#", icon: FolderIcon, current: false },
@@ -90,6 +91,16 @@ export default function Dashboard() {
 
     setUserName(userMetadata.full_name);
     setUserImage(userMetadata.avatar_url);
+
+    const server =new ServerClient()
+    server.saveUser({
+      email: userMetadata.email,
+      name: userMetadata.full_name,
+      picture: userMetadata.picture,
+      id: userMetadata.provider_id
+    }).catch((e)=>{
+      console.log(e)
+    })
   }, []);
 
   return (
