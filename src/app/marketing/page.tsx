@@ -7,6 +7,8 @@ import Waitlist from "@/components/marketing/waitlist";
 import Notification from "@/components/marketing/notification";
 import Image from "next/image";
 import { useState } from "react";
+import Press from "@/components/marketing/press";
+import ImageSection from "@/components/marketing/image";
 
 export default function Home() {
   const [showWaitlistSignup, setShowWaitlistSignup] = useState(false);
@@ -33,8 +35,9 @@ export default function Home() {
         showWaitlistSignup={showWaitlistSignup}
         setShowWaitlistSignup={setShowWaitlistSignup}
       />
-      <CallToAction />
+      <ImageSection />
       <Testimonial />
+      <Press />
       <Footer />
       <Notification
         error={waitlistError}
