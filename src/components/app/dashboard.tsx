@@ -92,27 +92,21 @@ export default function Dashboard() {
     setUserName(userMetadata.full_name);
     setUserImage(userMetadata.avatar_url);
 
-    const server =new ServerClient()
-    server.saveUser({
-      email: userMetadata.email,
-      name: userMetadata.full_name,
-      picture: userMetadata.picture,
-      id: userMetadata.provider_id
-    }).catch((e)=>{
-      console.log(e)
-    })
+    const server = new ServerClient();
+    server
+      .saveUser({
+        email: userMetadata.email,
+        name: userMetadata.full_name,
+        picture: userMetadata.picture,
+        id: userMetadata.provider_id,
+      })
+      .catch((e) => {
+        console.log(e);
+      });
   }, []);
 
   return (
     <>
-      {/*
-        This example requires updating your template:
-
-        ```
-        <html class="h-full bg-gray-900">
-        <body class="h-full">
-        ```
-      */}
       <div>
         <Transition.Root show={sidebarOpen} as={Fragment}>
           <Dialog

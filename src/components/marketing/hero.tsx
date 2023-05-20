@@ -149,11 +149,11 @@ export default function Hero(props: Props) {
             <p className="mt-6 text-lg leading-8 text-gray-600">
               People want experiences and platforms that spark in them a true
               sense of belonging, rather than passive consumption. Going
-              forward, they'll want to be surrounded by people of similar
+              forward, they&apos;ll want to be surrounded by people of similar
               sensibility, rather than online feeds of countless, random
-              ‘users’. They’ll also look for spaces whose membership is
-              self-selecting, trusted, participatory, plus places that blend the
-              online and IRL worlds seamlessly.
+              &apos;users&apos;. They&apos;ll also look for spaces whose
+              membership is self-selecting, trusted, participatory, plus places
+              that blend the online and IRL worlds seamlessly.
             </p>
             <div className="mt-10 flex items-center justify-center gap-x-6">
               <div
