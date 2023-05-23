@@ -263,7 +263,7 @@ export default function Dashboard() {
             {/* Deployment list */}
             <ul role="list" className="divide-y divide-white/5">
               {posts.map((post) => (
-                <PostDiv post={post} />
+                <PostDiv post={post} key={post.id} />
               ))}
             </ul>
           </main>
