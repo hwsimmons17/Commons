@@ -57,7 +57,7 @@ export default function Dashboard() {
     "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
   );
   const [posts, setPosts] = useState<Array<Post>>([]);
-  const server = new ServerClient();
+  var server: ServerClient;
   const router = useRouter();
 
   const createPost = async () => {
@@ -77,6 +77,7 @@ export default function Dashboard() {
   };
 
   useEffect(() => {
+    server = new ServerClient();
     const userMetadata = fb.getUserMetadata();
 
     setUserName(userMetadata.full_name);

@@ -19,6 +19,7 @@ export class ServerClient {
 
   constructor() {
     this.url = new URL(process.env.NEXT_PUBLIC_SERVER_URL!);
+
     let cookies = document.cookie.split("; ").reduce((prev, current) => {
       const [name, ...value] = current.split("=");
       //@ts-ignore
