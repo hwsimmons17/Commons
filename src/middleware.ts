@@ -1,5 +1,13 @@
 import { createMiddlewareSupabaseClient } from "@supabase/auth-helpers-nextjs";
 import { NextRequest, NextResponse } from "next/server";
+import * as jose from "jose";
+
+type UserJWT = {
+  email: string;
+  name: string;
+  expires_at: string;
+  id: string;
+};
 
 export const config = {
   matcher: [
@@ -33,17 +41,44 @@ export default async function middleware(req: NextRequest) {
       data: { session },
     } = await supabase.auth.getSession();
 
-    if (url.pathname === "/login" && session) {
+    if (!session) {
+      if (url.pathname != "/login") {
+        url.pathname = "/login";
+        return NextResponse.redirect(url);
+      } else {
+        url.pathname = `/app${url.pathname}`;
+        return NextResponse.rewrite(url);
+      }
+    }
+
+    if (session.expires_in <= 0) {
+      await supabase.auth.refreshSession(session);
+    }
+    let privateKey = process.env.SUPABASE_JWT_SECRET!;
+    let customSession = await new jose.SignJWT({
+      email: session.user.email,
+      name: session.user.user_metadata.name,
+      expiry: session.expires_at?.toString(),
+      id: session.user.user_metadata.sub,
+      picture: session.user.user_metadata.picture,
+    })
+      .setProtectedHeader({
+        alg: "HS256",
+        type: "JWT",
+      })
+      .sign(jose.base64url.decode(privateKey));
+
+    console.log(customSession);
+
+    if (url.pathname === "/login") {
       url.pathname = "/";
       return NextResponse.redirect(url);
     }
 
-    if (url.pathname != "/login" && !session) {
-      url.pathname = "/login";
-      return NextResponse.redirect(url);
-    }
     url.pathname = `/app${url.pathname}`;
-    return NextResponse.rewrite(url);
+    const rewrite = NextResponse.rewrite(url);
+    rewrite.cookies.set("custom_session", customSession);
+    return rewrite;
   }
 
   // rewrite root application to `/marketing` folder

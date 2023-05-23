@@ -1,13 +1,11 @@
 "use client";
-import { Fragment, useEffect, useState } from "react";
+import { Dispatch, Fragment, SetStateAction, useEffect, useState } from "react";
 import { Dialog, Menu, Transition } from "@headlessui/react";
 import {
-  ChartBarSquareIcon,
-  Cog6ToothIcon,
-  FolderIcon,
-  GlobeAltIcon,
-  ServerIcon,
-  SignalIcon,
+  CodeBracketIcon,
+  EllipsisVerticalIcon,
+  FlagIcon,
+  StarIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
 import {
@@ -19,21 +17,8 @@ import {
 import { Facebook } from "@/lib/facebook";
 import { useSupabaseClient } from "@supabase/auth-helpers-react";
 import { useRouter } from "next/navigation";
-import { ServerClient } from "@/lib/server";
+import { Post, ServerClient } from "@/lib/server";
 
-const navigation = [
-  { name: "Projects", href: "#", icon: FolderIcon, current: false },
-  { name: "Deployments", href: "#", icon: ServerIcon, current: true },
-  { name: "Activity", href: "#", icon: SignalIcon, current: false },
-  { name: "Domains", href: "#", icon: GlobeAltIcon, current: false },
-  { name: "Usage", href: "#", icon: ChartBarSquareIcon, current: false },
-  { name: "Settings", href: "#", icon: Cog6ToothIcon, current: false },
-];
-const teams = [
-  { id: 1, name: "Planetaria", href: "#", initial: "P", current: false },
-  { id: 2, name: "Protocol", href: "#", initial: "P", current: false },
-  { id: 3, name: "Tailwind Labs", href: "#", initial: "T", current: false },
-];
 const statuses = {
   offline: "text-gray-500 bg-gray-100/10",
   online: "text-green-400 bg-green-400/10",
@@ -43,19 +28,7 @@ const environments = {
   Preview: "text-gray-400 bg-gray-400/10 ring-gray-400/20",
   Production: "text-indigo-400 bg-indigo-400/10 ring-indigo-400/30",
 };
-const deployments = [
-  {
-    id: 1,
-    href: "#",
-    projectName: "ios-app",
-    teamName: "Planetaria",
-    status: "offline",
-    statusText: "Initiated 1m 32s ago",
-    description: "Deploys from GitHub",
-    environment: "Preview",
-  },
-  // More deployments...
-];
+
 const activityItems = [
   {
     user: {
@@ -83,8 +56,25 @@ export default function Dashboard() {
   const [userImage, setUserImage] = useState(
     "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
   );
-  const supabase = useSupabaseClient();
+  const [posts, setPosts] = useState<Array<Post>>([]);
+  const server = new ServerClient();
   const router = useRouter();
+
+  const createPost = async () => {
+    await server.createPost("Hunter is pretty cool").catch(async () => {
+      router.refresh();
+      await server.createPost("running after refresh");
+    });
+
+    router.refresh();
+    console.log("running after refresh");
+  };
+
+  const getPosts = async () => {
+    let posts = await server.getPosts();
+    console.log(posts);
+    setPosts(posts);
+  };
 
   useEffect(() => {
     const userMetadata = fb.getUserMetadata();
@@ -92,7 +82,6 @@ export default function Dashboard() {
     setUserName(userMetadata.full_name);
     setUserImage(userMetadata.avatar_url);
 
-    const server = new ServerClient();
     server
       .saveUser({
         email: userMetadata.email,
@@ -103,6 +92,8 @@ export default function Dashboard() {
       .catch((e) => {
         console.log(e);
       });
+
+    getPosts();
   }, []);
 
   return (
@@ -153,93 +144,11 @@ export default function Dashboard() {
                         onClick={() => setSidebarOpen(false)}
                       >
                         <span className="sr-only">Close sidebar</span>
-                        <XMarkIcon
-                          className="h-6 w-6 text-white"
-                          aria-hidden="true"
-                        />
+                        <XMarkIcon className="h-6 w-6" aria-hidden="true" />
                       </button>
                     </div>
                   </Transition.Child>
-                  {/* Sidebar component, swap this element with another sidebar if you like */}
-                  <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-gray-900 px-6 ring-1 ring-white/10">
-                    <div className="flex h-16 shrink-0 items-center">
-                      <img
-                        className="h-8 w-auto"
-                        src="./Commons_icon.png"
-                        alt="Your Company"
-                      />
-                    </div>
-                    <nav className="flex flex-1 flex-col">
-                      <ul role="list" className="flex flex-1 flex-col gap-y-7">
-                        <li>
-                          <ul role="list" className="-mx-2 space-y-1">
-                            {navigation.map((item) => (
-                              <li key={item.name}>
-                                <a
-                                  href={item.href}
-                                  className={classNames(
-                                    item.current
-                                      ? "bg-gray-800 text-white"
-                                      : "text-gray-400 hover:text-white hover:bg-gray-800",
-                                    "group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
-                                  )}
-                                >
-                                  <item.icon
-                                    className="h-6 w-6 shrink-0"
-                                    aria-hidden="true"
-                                  />
-                                  {item.name}
-                                </a>
-                              </li>
-                            ))}
-                          </ul>
-                        </li>
-                        <li>
-                          <div className="text-xs font-semibold leading-6 text-gray-400">
-                            Your communities
-                          </div>
-                          <ul role="list" className="-mx-2 mt-2 space-y-1">
-                            {teams.map((team) => (
-                              <li key={team.name}>
-                                <a
-                                  href={team.href}
-                                  className={classNames(
-                                    team.current
-                                      ? "bg-gray-800 text-white"
-                                      : "text-gray-400 hover:text-white hover:bg-gray-800",
-                                    "group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
-                                  )}
-                                >
-                                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border border-gray-700 bg-gray-800 text-[0.625rem] font-medium text-gray-400 group-hover:text-white">
-                                    {team.initial}
-                                  </span>
-                                  <span className="truncate">{team.name}</span>
-                                </a>
-                              </li>
-                            ))}
-                          </ul>
-                        </li>
-                        <li className="-mx-6 mt-auto">
-                          <a
-                            href="#"
-                            className="flex items-center gap-x-4 px-6 py-3 text-sm font-semibold leading-6 text-white hover:bg-gray-800"
-                          >
-                            <img
-                              className="h-8 w-8 rounded-full bg-gray-800"
-                              src={userImage}
-                              alt=""
-                              onClick={async () => {
-                                await supabase.auth.signOut();
-                                router.push("/login");
-                              }}
-                            />
-                            <span className="sr-only">Your profile</span>
-                            <span aria-hidden="true">{userName}</span>
-                          </a>
-                        </li>
-                      </ul>
-                    </nav>
-                  </div>
+                  <Sidebar userImage={userImage} userName={userName} />
                 </Dialog.Panel>
               </Transition.Child>
             </div>
@@ -249,85 +158,7 @@ export default function Dashboard() {
         {/* Static sidebar for desktop */}
         <div className="hidden xl:fixed xl:inset-y-0 xl:z-50 xl:flex xl:w-72 xl:flex-col">
           {/* Sidebar component, swap this element with another sidebar if you like */}
-          <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-black/10 px-6 ring-1 ring-white/5">
-            <div className="flex h-16 shrink-0 items-center">
-              <img
-                className="h-12 w-auto"
-                src="./Commons_icon.png"
-                alt="Your Company"
-              />
-            </div>
-            <nav className="flex flex-1 flex-col">
-              <ul role="list" className="flex flex-1 flex-col gap-y-7">
-                <li>
-                  <ul role="list" className="-mx-2 space-y-1">
-                    {navigation.map((item) => (
-                      <li key={item.name}>
-                        <a
-                          href={item.href}
-                          className={classNames(
-                            item.current
-                              ? "bg-gray-800 text-white"
-                              : "text-gray-400 hover:text-white hover:bg-gray-800",
-                            "group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
-                          )}
-                        >
-                          <item.icon
-                            className="h-6 w-6 shrink-0"
-                            aria-hidden="true"
-                          />
-                          {item.name}
-                        </a>
-                      </li>
-                    ))}
-                  </ul>
-                </li>
-                <li>
-                  <div className="text-xs font-semibold leading-6 text-gray-400">
-                    Your communities
-                  </div>
-                  <ul role="list" className="-mx-2 mt-2 space-y-1">
-                    {teams.map((team) => (
-                      <li key={team.name}>
-                        <a
-                          href={team.href}
-                          className={classNames(
-                            team.current
-                              ? "bg-gray-800 text-white"
-                              : "text-gray-400 hover:text-white hover:bg-gray-800",
-                            "group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
-                          )}
-                        >
-                          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border border-gray-700 bg-gray-800 text-[0.625rem] font-medium text-gray-400 group-hover:text-white">
-                            {team.initial}
-                          </span>
-                          <span className="truncate">{team.name}</span>
-                        </a>
-                      </li>
-                    ))}
-                  </ul>
-                </li>
-                <li className="-mx-6 mt-auto">
-                  <a
-                    href="#"
-                    className="flex items-center gap-x-4 px-6 py-3 text-sm font-semibold leading-6 text-white hover:bg-gray-800"
-                  >
-                    <img
-                      className="h-8 w-8 rounded-full bg-gray-800"
-                      src={userImage}
-                      alt=""
-                      onClick={async (e) => {
-                        await supabase.auth.signOut();
-                        router.push("/login");
-                      }}
-                    />
-                    <span className="sr-only">Your profile</span>
-                    <span aria-hidden="true">{userName}</span>
-                  </a>
-                </li>
-              </ul>
-            </nav>
-          </div>
+          <Sidebar userImage={userImage} userName={userName} />
         </div>
 
         <div className="xl:pl-72">
@@ -335,7 +166,7 @@ export default function Dashboard() {
           <div className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-6 border-b border-white/5 bg-gray-900 px-4 shadow-sm sm:px-6 lg:px-8">
             <button
               type="button"
-              className="-m-2.5 p-2.5 text-white xl:hidden"
+              className="-m-2.5 p-2.5 xl:hidden"
               onClick={() => setSidebarOpen(true)}
             >
               <span className="sr-only">Open sidebar</span>
@@ -366,19 +197,15 @@ export default function Dashboard() {
 
           <main className="lg:pr-96">
             <header className="flex items-center justify-between border-b border-white/5 px-4 py-4 sm:px-6 sm:py-6 lg:px-8">
-              <h1 className="text-base font-semibold leading-7 text-white">
-                Deployments
+              <h1
+                className="text-base font-semibold leading-7"
+                onClick={createPost}
+              >
+                Activity Feed
               </h1>
 
               {/* Sort dropdown */}
               <Menu as="div" className="relative">
-                <Menu.Button className="flex items-center gap-x-1 text-sm font-medium leading-6 text-white">
-                  Sort by
-                  <ChevronUpDownIcon
-                    className="h-5 w-5 text-gray-500"
-                    aria-hidden="true"
-                  />
-                </Menu.Button>
                 <Transition
                   as={Fragment}
                   enter="transition ease-out duration-100"
@@ -435,62 +262,8 @@ export default function Dashboard() {
 
             {/* Deployment list */}
             <ul role="list" className="divide-y divide-white/5">
-              {deployments.map((deployment) => (
-                <li
-                  key={deployment.id}
-                  className="relative flex items-center space-x-4 px-4 py-4 sm:px-6 lg:px-8"
-                >
-                  <div className="min-w-0 flex-auto">
-                    <div className="flex items-center gap-x-3">
-                      <div
-                        className={classNames(
-                          //@ts-ignore
-                          statuses[deployment.status],
-                          "flex-none rounded-full p-1"
-                        )}
-                      >
-                        <div className="h-2 w-2 rounded-full bg-current" />
-                      </div>
-                      <h2 className="min-w-0 text-sm font-semibold leading-6 text-white">
-                        <a href={deployment.href} className="flex gap-x-2">
-                          <span className="truncate">
-                            {deployment.teamName}
-                          </span>
-                          <span className="text-gray-400">/</span>
-                          <span className="whitespace-nowrap">
-                            {deployment.projectName}
-                          </span>
-                          <span className="absolute inset-0" />
-                        </a>
-                      </h2>
-                    </div>
-                    <div className="mt-3 flex items-center gap-x-2.5 text-xs leading-5 text-gray-400">
-                      <p className="truncate">{deployment.description}</p>
-                      <svg
-                        viewBox="0 0 2 2"
-                        className="h-0.5 w-0.5 flex-none fill-gray-300"
-                      >
-                        <circle cx={1} cy={1} r={1} />
-                      </svg>
-                      <p className="whitespace-nowrap">
-                        {deployment.statusText}
-                      </p>
-                    </div>
-                  </div>
-                  <div
-                    className={classNames(
-                      //@ts-ignore
-                      environments[deployment.environment],
-                      "rounded-full flex-none py-1 px-2 text-xs font-medium ring-1 ring-inset"
-                    )}
-                  >
-                    {deployment.environment}
-                  </div>
-                  <ChevronRightIcon
-                    className="h-5 w-5 flex-none text-gray-400"
-                    aria-hidden="true"
-                  />
-                </li>
+              {posts.map((post) => (
+                <PostDiv post={post} />
               ))}
             </ul>
           </main>
@@ -498,9 +271,7 @@ export default function Dashboard() {
           {/* Activity feed */}
           <aside className="bg-black/10 lg:fixed lg:bottom-0 lg:right-0 lg:top-16 lg:w-96 lg:overflow-y-auto lg:border-l lg:border-white/5">
             <header className="flex items-center justify-between border-b border-white/5 px-4 py-4 sm:px-6 sm:py-6 lg:px-8">
-              <h2 className="text-base font-semibold leading-7 text-white">
-                Activity feed
-              </h2>
+              <h2 className="text-base font-semibold leading-7">About</h2>
               <a
                 href="#"
                 className="text-sm font-semibold leading-6 text-indigo-400"
@@ -517,7 +288,10 @@ export default function Dashboard() {
                       alt=""
                       className="h-6 w-6 flex-none rounded-full bg-gray-800"
                     />
-                    <h3 className="flex-auto truncate text-sm font-semibold leading-6 text-white">
+                    <h3
+                      className="flex-auto truncate text-sm font-semibold leading-6"
+                      onClick={getPosts}
+                    >
                       {item.user.name}
                     </h3>
                     <time
@@ -542,5 +316,184 @@ export default function Dashboard() {
         </div>
       </div>
     </>
+  );
+}
+
+interface SidebarProps {
+  userName: string;
+  userImage: string;
+}
+
+function Sidebar(props: SidebarProps) {
+  const supabase = useSupabaseClient();
+  const router = useRouter();
+
+  const signout = async () => {
+    await supabase.auth.signOut();
+    router.push("/login");
+  };
+
+  return (
+    <div className="flex grow flex-col gap-y-5 overflow-y-auto border-r border-gray-200 bg-white px-6">
+      <div className="flex h-16 shrink-0 items-center">
+        <img className="h-14 w-auto" src="./Commons_icon.png" alt="Commons" />
+      </div>
+      <nav className="flex flex-1 flex-col">
+        <ul role="list" className="flex flex-1 flex-col gap-y-7">
+          <li>
+            <ul role="list" className="-mx-2 space-y-1"></ul>
+          </li>
+          <li>
+            <div className="text-xs font-semibold leading-6 text-gray-400">
+              Your groups
+            </div>
+            <ul role="list" className="-mx-2 mt-2 space-y-1">
+              <li>
+                <div
+                  className={classNames(
+                    "text-gray-700 hover:text-indigo-600 hover:bg-gray-50 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold cursor-pointer"
+                  )}
+                >
+                  <img
+                    src="./rolex_seadweller.jpeg"
+                    className="object-cover border-gray-200 group-hover:border-indigo-600 group-hover:text-indigo-600 flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border"
+                  />
+                  <span className="truncate">
+                    Drinking Coffee & Talking Watches
+                  </span>
+                </div>
+              </li>
+            </ul>
+          </li>
+          <li className="-mx-6 mt-auto" onClick={signout}>
+            <a
+              href="#"
+              className="flex items-center gap-x-4 px-6 py-3 text-sm font-semibold leading-6 text-gray-900 hover:bg-gray-50"
+            >
+              <img
+                className="h-8 w-8 rounded-full bg-gray-50"
+                src={props.userImage}
+                alt=""
+              />
+              <span className="sr-only">Your profile</span>
+              <span aria-hidden="true">{props.userName}</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  );
+}
+
+export function PostDiv(props: { post: Post }) {
+  return (
+    <div className="bg-white px-4 py-5 sm:px-6">
+      <div className="flex space-x-3">
+        <div className="flex-shrink-0">
+          <img
+            className="h-10 w-10 rounded-full"
+            src={props.post.creator_picture}
+            alt=""
+          />
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-semibold text-gray-900">
+            <a href="#" className="hover:underline">
+              {props.post.creator_name}
+            </a>
+          </p>
+          <p className="text-sm text-gray-500">
+            <a href="#" className="hover:underline">
+              {props.post.formattedTime}
+            </a>
+          </p>
+          <div className="mt-2 text-sm text-gray-700">
+            <p>{props.post.content}</p>
+          </div>
+        </div>
+        <div className="flex flex-shrink-0 self-center">
+          <Menu as="div" className="relative inline-block text-left">
+            <div>
+              <Menu.Button className="-m-2 flex items-center rounded-full p-2 text-gray-400 hover:text-gray-600">
+                <span className="sr-only">Open options</span>
+                <EllipsisVerticalIcon className="h-5 w-5" aria-hidden="true" />
+              </Menu.Button>
+            </div>
+
+            <Transition
+              as={Fragment}
+              enter="transition ease-out duration-100"
+              enterFrom="transform opacity-0 scale-95"
+              enterTo="transform opacity-100 scale-100"
+              leave="transition ease-in duration-75"
+              leaveFrom="transform opacity-100 scale-100"
+              leaveTo="transform opacity-0 scale-95"
+            >
+              <Menu.Items className="absolute right-0 z-10 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                <div className="py-1">
+                  <Menu.Item>
+                    {({ active }) => (
+                      <a
+                        href="#"
+                        className={classNames(
+                          active
+                            ? "bg-gray-100 text-gray-900"
+                            : "text-gray-700",
+                          "flex px-4 py-2 text-sm"
+                        )}
+                      >
+                        <StarIcon
+                          className="mr-3 h-5 w-5 text-gray-400"
+                          aria-hidden="true"
+                        />
+                        <span>Add to favorites</span>
+                      </a>
+                    )}
+                  </Menu.Item>
+                  <Menu.Item>
+                    {({ active }) => (
+                      <a
+                        href="#"
+                        className={classNames(
+                          active
+                            ? "bg-gray-100 text-gray-900"
+                            : "text-gray-700",
+                          "flex px-4 py-2 text-sm"
+                        )}
+                      >
+                        <CodeBracketIcon
+                          className="mr-3 h-5 w-5 text-gray-400"
+                          aria-hidden="true"
+                        />
+                        <span>Embed</span>
+                      </a>
+                    )}
+                  </Menu.Item>
+                  <Menu.Item>
+                    {({ active }) => (
+                      <a
+                        href="#"
+                        className={classNames(
+                          active
+                            ? "bg-gray-100 text-gray-900"
+                            : "text-gray-700",
+                          "flex px-4 py-2 text-sm"
+                        )}
+                      >
+                        <FlagIcon
+                          className="mr-3 h-5 w-5 text-gray-400"
+                          aria-hidden="true"
+                        />
+                        <span>Report content</span>
+                      </a>
+                    )}
+                  </Menu.Item>
+                </div>
+              </Menu.Items>
+            </Transition>
+          </Menu>
+        </div>
+      </div>
+    </div>
   );
 }
