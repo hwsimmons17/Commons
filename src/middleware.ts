@@ -68,8 +68,6 @@ export default async function middleware(req: NextRequest) {
       })
       .sign(jose.base64url.decode(privateKey));
 
-    console.log(customSession);
-
     if (url.pathname === "/login") {
       url.pathname = "/";
       return NextResponse.redirect(url);

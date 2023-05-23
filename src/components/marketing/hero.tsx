@@ -64,13 +64,13 @@ export default function Hero(props: Props) {
               </a>
             ))}
           </div>
-          <div
-            className="hidden lg:flex lg:flex-1 lg:justify-end cursor-pointer"
-            onClick={joinWaitlist}
-          >
-            <a className="text-sm font-semibold leading-6 text-gray-900">
+          <div className="hidden lg:flex lg:flex-1 lg:justify-end cursor-pointer">
+            <button
+              className="text-sm font-semibold leading-6 text-green z-50"
+              onClick={joinWaitlist}
+            >
               Join Waitlist <span aria-hidden="true">&rarr;</span>
-            </a>
+            </button>
           </div>
         </nav>
         <Dialog
