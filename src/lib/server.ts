@@ -18,9 +18,16 @@ export const useServerClient = (): ServerClient | null => {
   const [serverClient, setServerClient] = useState<ServerClient | null>(null);
 
   useEffect(() => {
+    if (!document) {
+      setServerClient(null);
+      return;
+    }
+    if (serverClient) {
+      return;
+    }
     let client = new ServerClient();
     setServerClient(client);
-  }, [document]);
+  }, [serverClient]);
 
   return serverClient;
 };
