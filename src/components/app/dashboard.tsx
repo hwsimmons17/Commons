@@ -1,33 +1,13 @@
 "use client";
-import { Dispatch, Fragment, SetStateAction, useEffect, useState } from "react";
-import { Dialog, Menu, Transition } from "@headlessui/react";
-import {
-  CodeBracketIcon,
-  EllipsisVerticalIcon,
-  FlagIcon,
-  StarIcon,
-  XMarkIcon,
-} from "@heroicons/react/24/outline";
-import {
-  Bars3Icon,
-  ChevronRightIcon,
-  ChevronUpDownIcon,
-  MagnifyingGlassIcon,
-} from "@heroicons/react/20/solid";
+import { Fragment, useEffect, useState } from "react";
+import { Dialog, Transition } from "@headlessui/react";
+import { XMarkIcon } from "@heroicons/react/24/outline";
+import { Bars3Icon, MagnifyingGlassIcon } from "@heroicons/react/20/solid";
 import { Facebook } from "@/lib/facebook";
-import { useSupabaseClient } from "@supabase/auth-helpers-react";
 import { useRouter } from "next/navigation";
-import { Post, ServerClient } from "@/lib/server";
-
-const statuses = {
-  offline: "text-gray-500 bg-gray-100/10",
-  online: "text-green-400 bg-green-400/10",
-  error: "text-rose-400 bg-rose-400/10",
-};
-const environments = {
-  Preview: "text-gray-400 bg-gray-400/10 ring-gray-400/20",
-  Production: "text-indigo-400 bg-indigo-400/10 ring-indigo-400/30",
-};
+import { Post, ServerClient, useServerClient } from "@/lib/server";
+import { PostDiv } from "./posts/postDiv";
+import Sidebar from "./posts/sidebar";
 
 const activityItems = [
   {
@@ -58,31 +38,37 @@ export default function Dashboard() {
   );
   const [posts, setPosts] = useState<Array<Post>>([]);
   const [postText, setPostText] = useState("");
-  var server: ServerClient;
+  const server = useServerClient();
   const router = useRouter();
 
   const createPost = async () => {
     if (postText == "") {
       return;
     }
+    if (!server) {
+      return;
+    }
     await server.createPost(postText);
 
     router.refresh();
-    console.log("running after refresh");
   };
 
   const getPosts = async () => {
+    if (!server) {
+      return;
+    }
     let posts = await server.getPosts();
     setPosts(posts);
   };
 
   useEffect(() => {
-    server = new ServerClient();
     const userMetadata = fb.getUserMetadata();
-
     setUserName(userMetadata.full_name);
     setUserImage(userMetadata.avatar_url);
 
+    if (!server) {
+      return;
+    }
     server
       .saveUser({
         email: userMetadata.email,
@@ -95,7 +81,7 @@ export default function Dashboard() {
       });
 
     getPosts();
-  }, []);
+  }, [server]);
 
   return (
     <>
@@ -285,184 +271,5 @@ export default function Dashboard() {
         </div>
       </div>
     </>
-  );
-}
-
-interface SidebarProps {
-  userName: string;
-  userImage: string;
-}
-
-function Sidebar(props: SidebarProps) {
-  const supabase = useSupabaseClient();
-  const router = useRouter();
-
-  const signout = async () => {
-    await supabase.auth.signOut();
-    router.push("/login");
-  };
-
-  return (
-    <div className="flex grow flex-col gap-y-5 overflow-y-auto border-r border-gray-200 bg-white px-6">
-      <div className="flex h-16 shrink-0 items-center">
-        <img className="h-14 w-auto" src="./Commons_icon.png" alt="Commons" />
-      </div>
-      <nav className="flex flex-1 flex-col">
-        <ul role="list" className="flex flex-1 flex-col gap-y-7">
-          <li>
-            <ul role="list" className="-mx-2 space-y-1"></ul>
-          </li>
-          <li>
-            <div className="text-xs font-semibold leading-6 text-gray-400">
-              Your groups
-            </div>
-            <ul role="list" className="-mx-2 mt-2 space-y-1">
-              <li>
-                <div
-                  className={classNames(
-                    "text-gray-700 hover:text-indigo-600 hover:bg-gray-50 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold cursor-pointer"
-                  )}
-                >
-                  <img
-                    src="./rolex_seadweller.jpeg"
-                    className="object-cover border-gray-200 group-hover:border-indigo-600 group-hover:text-indigo-600 flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border"
-                  />
-                  <span className="truncate">
-                    Drinking Coffee & Talking Watches
-                  </span>
-                </div>
-              </li>
-            </ul>
-          </li>
-          <li className="-mx-6 mt-auto" onClick={signout}>
-            <a
-              href="#"
-              className="flex items-center gap-x-4 px-6 py-3 text-sm font-semibold leading-6 text-gray-900 hover:bg-gray-50"
-            >
-              <img
-                className="h-8 w-8 rounded-full bg-gray-50"
-                src={props.userImage}
-                alt=""
-              />
-              <span className="sr-only">Your profile</span>
-              <span aria-hidden="true">{props.userName}</span>
-            </a>
-          </li>
-        </ul>
-      </nav>
-    </div>
-  );
-}
-
-export function PostDiv(props: { post: Post }) {
-  return (
-    <div className="bg-white px-4 py-5 sm:px-6">
-      <div className="flex space-x-3">
-        <div className="flex-shrink-0">
-          <img
-            className="h-10 w-10 rounded-full"
-            src={props.post.creator_picture}
-            alt=""
-          />
-        </div>
-        <div className="min-w-0 flex-1">
-          <p className="text-sm font-semibold text-gray-900">
-            <a href="#" className="hover:underline">
-              {props.post.creator_name}
-            </a>
-          </p>
-          <p className="text-sm text-gray-500">
-            <a href="#" className="hover:underline">
-              {props.post.formattedTime}
-            </a>
-          </p>
-          <div className="mt-2 text-sm text-gray-700">
-            <p>{props.post.content}</p>
-          </div>
-        </div>
-        <div className="flex flex-shrink-0 self-center">
-          <Menu as="div" className="relative inline-block text-left">
-            <div>
-              <Menu.Button className="-m-2 flex items-center rounded-full p-2 text-gray-400 hover:text-gray-600">
-                <span className="sr-only">Open options</span>
-                <EllipsisVerticalIcon className="h-5 w-5" aria-hidden="true" />
-              </Menu.Button>
-            </div>
-
-            <Transition
-              as={Fragment}
-              enter="transition ease-out duration-100"
-              enterFrom="transform opacity-0 scale-95"
-              enterTo="transform opacity-100 scale-100"
-              leave="transition ease-in duration-75"
-              leaveFrom="transform opacity-100 scale-100"
-              leaveTo="transform opacity-0 scale-95"
-            >
-              <Menu.Items className="absolute right-0 z-10 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-                <div className="py-1">
-                  <Menu.Item>
-                    {({ active }) => (
-                      <a
-                        href="#"
-                        className={classNames(
-                          active
-                            ? "bg-gray-100 text-gray-900"
-                            : "text-gray-700",
-                          "flex px-4 py-2 text-sm"
-                        )}
-                      >
-                        <StarIcon
-                          className="mr-3 h-5 w-5 text-gray-400"
-                          aria-hidden="true"
-                        />
-                        <span>Add to favorites</span>
-                      </a>
-                    )}
-                  </Menu.Item>
-                  <Menu.Item>
-                    {({ active }) => (
-                      <a
-                        href="#"
-                        className={classNames(
-                          active
-                            ? "bg-gray-100 text-gray-900"
-                            : "text-gray-700",
-                          "flex px-4 py-2 text-sm"
-                        )}
-                      >
-                        <CodeBracketIcon
-                          className="mr-3 h-5 w-5 text-gray-400"
-                          aria-hidden="true"
-                        />
-                        <span>Embed</span>
-                      </a>
-                    )}
-                  </Menu.Item>
-                  <Menu.Item>
-                    {({ active }) => (
-                      <a
-                        href="#"
-                        className={classNames(
-                          active
-                            ? "bg-gray-100 text-gray-900"
-                            : "text-gray-700",
-                          "flex px-4 py-2 text-sm"
-                        )}
-                      >
-                        <FlagIcon
-                          className="mr-3 h-5 w-5 text-gray-400"
-                          aria-hidden="true"
-                        />
-                        <span>Report content</span>
-                      </a>
-                    )}
-                  </Menu.Item>
-                </div>
-              </Menu.Items>
-            </Transition>
-          </Menu>
-        </div>
-      </div>
-    </div>
   );
 }

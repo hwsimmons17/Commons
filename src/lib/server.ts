@@ -2,6 +2,7 @@ import jwtDecode from "jwt-decode";
 import { FacebookUser } from "./facebook";
 import { UUID } from "crypto";
 import moment from "moment";
+import { useEffect, useState } from "react";
 
 export type Post = {
   id: UUID;
@@ -11,6 +12,17 @@ export type Post = {
   creator_name: string;
   creator_picture: string;
   formattedTime: string;
+};
+
+export const useServerClient = (): ServerClient | null => {
+  const [serverClient, setServerClient] = useState<ServerClient | null>(null);
+
+  useEffect(() => {
+    let client = new ServerClient();
+    setServerClient(client);
+  }, [document]);
+
+  return serverClient;
 };
 
 export class ServerClient {
